@@ -1,0 +1,10 @@
+*.exe
+.vscode/
+*.in
+*.out
+in*.txt
+ans*.txt
+__MACOSX/
+.DS_Store
+*.zip
+*.rar
