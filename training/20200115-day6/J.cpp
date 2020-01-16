@@ -10,38 +10,43 @@ const double pi = acos(-1.0);
 pii p[200010];
 int main()
 {
-    double sum = 0, cur = 0, curx = 0;
+    double cur = 0, curx = 0;
     int n;
     scanf("%d", &n);
     for (int i = 1; i <= n; i++) {
         double x, y, z;
         scanf("%lf%lf%lf", &x, &y, &z);
-        sum += x;
-        if (z <= pi) {
-            p[2 * i - 1] = mp(z, y);
-            p[2 * i] = mp(z + pi, -y);
-            cur += x - z * y;
-            curx -= y;
-        } else {
-            p[2 * i - 1] = mp(2 * pi - z, y);
-            p[2 * i] = mp(z, -y);
-            cur -= x - (2 * pi - z) * y;
+        double l = z - min(pi, x / y), r = z + min(pi, x / y);
+        //printf("------ %lf %lf\n", l, r);
+        if (l < 0) {
             curx += y;
+            cur += x - y * z;
+            l += 2 * pi;
         }
+        if (r > 2 * pi) {
+            curx -= y;
+            cur += x - y * (2 * pi - z);
+            r -= 2 * pi;
+        }
+        p[3 * i - 2] = mp(l, y);
+        p[3 * i - 1] = mp(z, -2 * y);
+        p[3 * i] = mp(r, y);
     }
-    sort(p + 1, p + 1 + 2 * n);
-    p[2 * n + 1] = p[1];
+    sort(p + 1, p + 1 + 3 * n);
+
+    p[0] = mp(0, 0);
+    p[3 * n + 1] = mp(2 * pi, 0);
     double ans = cur;
-    for (int i = 1; i <= 2 * n; i++) {
+    for (int i = 0; i <= 3 * n; i++) {
         while (p[i].ff == p[i + 1].ff) {
-            curx += 2 * p[i].ss;
-            cur -= 2 * p[i].ff * p[i].ss;
+            curx += p[i + 1].ss;
+            cur -= p[i + 1].ff * p[i + 1].ss;
             i++;
         }
         double tmp = max(curx * p[i].ff, curx * p[i + 1].ff) + cur;
         ans = max(ans, tmp);
-        curx += 2 * p[i].ss;
-        cur -= 2 * p[i].ff * p[i].ss;
+        curx += p[i + 1].ss;
+        cur -= p[i + 1].ff * p[i + 1].ss;
     }
-    printf("%.6lf\n", ans + sum);
+    printf("%.10lf\n", ans);
 }
