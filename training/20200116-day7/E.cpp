@@ -3,8 +3,23 @@ using namespace std;
 typedef long long ll;
 const int mod = 998244353;
 const int inv2 = (mod + 1) / 2;
+const int g = 3; // 原根
+const int _N = 2048;
+const int _M = 512;
 
-int rev[4000];
+ll quickpow(ll base, ll b)
+{
+    ll ans = 1;
+    while (b) {
+        if (b & 1)
+            ans = ans * base % mod;
+        base = base * base % mod;
+        b >>= 1;
+    }
+    return ans % mod;
+}
+
+int rev[2 * _N + 10];
 void getrev(int len)
 {
     int bit = 0;
@@ -14,114 +29,82 @@ void getrev(int len)
         rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (bit - 1));
 }
 
-ll quickpow(ll base, ll b)
+void ntt(ll x[], int len, int opt)
 {
-    ll res = 1;
-    while (b) {
-        if (b & 1)
-            res = res * base % mod;
-        base = base * base % mod;
-        b >>= 1;
-    }
-    return res;
-}
-
-inline ll MOD(ll a)
-{
-    if (a >= mod)
-        return a - mod;
-    return a;
-}
-
-ll ans[2050][2050];
-void fwt_xor(ll a[], ll b[], int n, int opt, int upd)
-{
-    ll TMP = quickpow(n, mod - 2);
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < len; i++)
         if (i < rev[i])
-            swap(b[i], b[rev[i]]);
-    for (int i = 1; i < n; i <<= 1) {
-        ll tmp = quickpow(3, (mod - 1) / (i * 2));
+            swap(x[i], x[rev[i]]);
+    for (int mid = 1; mid < len; mid <<= 1) {
+        ll tmp = quickpow(g, (mod - 1) / (mid * 2));
         if (opt == -1)
             tmp = quickpow(tmp, mod - 2);
-
-        for (int j = 0, add = i << 1; j < n; j += add) {
+        for (int i = 0, add = mid << 1; i < len; i += add) {
             ll base = 1;
-            for (int k = j; k < i + j; k++, base = base * tmp % mod) {
-                int x = a[k], y = a[i + k];
-                a[k] = (x + y) % mod, a[i + k] = (x - y + mod) % mod;
-
-                int aa = b[k], bb = base * b[i + k] % mod;
-                b[k] = (aa + bb) % mod, b[i + k] = (aa - bb + mod) % mod;
-
-                if (opt == -1) {
-                    a[k] = a[k] * inv2 % mod;
-                    a[i + k] = a[i + k] * inv2 % mod;
-                    if (upd) {
-                        ans[k][k] = MOD(ans[k][k] + a[k] * b[k] % mod);
-                        ans[i + k][i + k] = MOD(ans[i + k][i + k] + a[i + k] * b[i + k] % mod);
-                        ans[k][i + k] = MOD(ans[k][i + k] + b[k] * a[i + k] % mod);
-                        ans[i + k][k] = MOD(ans[i + k][k] + b[i + k] * a[k] % mod);
-                    }
-                }
+            for (int j = i; j < i + mid; j++, base = base * tmp % mod) {
+                ll a = x[j], b = base * x[j + mid] % mod;
+                x[j] = (a + b) % mod, x[j + mid] = (a - b + mod) % mod;
             }
         }
     }
 }
 
-ll a[2050], b[2050];
+void fwt_xor(ll a[], int n, int opt)
+{
+    for (int i = 1; i < n; i <<= 1)
+        for (int j = 0, add = i << 1; j < n; j += add)
+            for (int k = 0; k < i; k++) {
+                ll x = a[j + k], y = a[i + j + k];
+                a[j + k] = (x + y) % mod, a[i + j + k] = (x - y + mod) % mod;
+                if (opt == -1)
+                    a[j + k] = a[j + k] * inv2 % mod, a[i + j + k] = a[i + j + k] * inv2 % mod;
+            }
+}
+
+int a[100010], b[100010];
+ll f1[_N + 10][_M + 10], f2[_M + 10][_N + 10];
+
 int main()
 {
-    freopen("1.in", "r", stdin);
-    int n;
+    int n, m, N = 0, M = 0;
     scanf("%d", &n);
-    for (int i = 1; i <= n; i++) {
-        int x;
-        scanf("%d", &x);
-        a[x]++;
+    for (int i = 1; i <= n; i++)
+        scanf("%d", a + i), N = max(N, a[i]);
+    for (int i = 1; i <= n; i++)
+        scanf("%d", b + i), M = max(M, b[i]);
+    for (int i = 1; i <= n; i++)
+        f1[a[i]][b[i]]++;
+
+    n = N * 4, m = M;
+    N = M = 1;
+    while (N <= n)
+        N <<= 1;
+    while (M <= m)
+        M <<= 1;
+
+    for (int i = 0; i < N; i++) {
+        fwt_xor(f1[i], M, 1);
+        for (int j = 0; j < M; j++)
+            f2[j][i] = f1[i][j];
     }
-    for (int i = 1; i <= n; i++) {
-        int x;
-        scanf("%d", &x);
-        b[x]++;
+    getrev(N);
+    for (int i = 0; i < M; i++) {
+        ntt(f2[i], N, 1);
+        for (int j = 0; j < N; j++)
+            f2[i][j] = quickpow(f2[i][j], 4);
+        ntt(f2[i], N, -1);
+        for (int j = 0; j < N; j++)
+            f1[j][i] = f2[i][j];
     }
-
-    getrev(1024);
-    fwt_xor(b, a, 1024, 1, 0);
-    for (int i = 0; i < 1024; i++) {
-        a[i] = a[i] * a[i] % mod;
-        b[i] = b[i] * b[i] % mod;
-    }
-    fwt_xor(b, a, 1024, -1, 0);
-    ll tmp = quickpow(1024, mod - 2);
-    for (int i = 0; i < 1024; i++)
-        a[i] = a[i] * tmp % mod;
-
-    getrev(2048);
-    fwt_xor(b, a, 2048, 1, 0);
-    for (int i = 0; i < 2048; i++) {
-        a[i] = a[i] * a[i] % mod;
-        b[i] = b[i] * b[i] % mod;
-    }
-    fwt_xor(b, a, 2048, -1, 1);
-
-    ll ansn = 0, TMP = quickpow(2048, mod - 2);
-
-    for (int i = 0; i < 2048; i++)
-        if (a[i])
-            printf("%d %d\n", i, a[i] * TMP % mod);
-    for (int i = 0; i < 2048; i++)
-        if (b[i])
-            printf("%d %d\n", i, b[i]);
-
-    for (int i = 0; i < 2048; i++) {
-        tmp = TMP;
-        for (int j = 0; j < 1024; j++) {
-            //if (ans[i][j])
-            //    printf("%d %d %lld\n", i, j, ans[i][j] * TMP % mod);
-            ansn = MOD(ansn + 1ll * ans[i][j] * tmp % mod);
+    ll ans = 0;
+    for (int i = 0; i < N; i++) {
+        fwt_xor(f1[i], M, -1);
+        ll tmp = 1;
+        for (int j = 0; j < M; j++) {
+            ans += f1[i][j] * tmp % mod;
+            if (ans >= mod)
+                ans -= mod;
             tmp = tmp * i % mod;
         }
     }
-    printf("%lld\n", ansn);
+    printf("%lld\n", ans * quickpow(N, mod - 2) % mod);
 }
