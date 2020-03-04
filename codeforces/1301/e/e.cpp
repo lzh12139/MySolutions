@@ -21,7 +21,7 @@ typedef pair<int, int> pii;
 
 char str[510][510];
 int sum[7][510][510];
-set<pii> s[510];
+int judge[255][510][510];
 int main()
 {
     int n, m, q;
@@ -47,9 +47,8 @@ int main()
         printf("------------\n");
     }*/
     for (int i = 1; i < n; i++)
-        for (int j = 1; j < m; j++)
+        for (int j = 1; j < m; j++) {
             if (str[i][j] == 'R' && str[i][j + 1] == 'G' && str[i + 1][j] == 'Y' && str[i + 1][j + 1] == 'B') {
-                int big;
                 for (int k = 2;; k++) {
                     int tmp = 0;
                     if (i >= k && j >= k && sum[1][i][j] + sum[1][i - k][j - k] - sum[1][i - k][j] - sum[1][i][j - k] == k * k)
@@ -60,26 +59,29 @@ int main()
                         tmp++;
                     if (i + k <= n && j + k <= m && sum[4][i + 1][j + 1] + sum[4][i + k + 1][j + k + 1] - sum[4][i + k + 1][j + 1] - sum[4][i + 1][j + k + 1] == k * k)
                         tmp++;
-                    if (tmp != 4) {
-                        big = k - 1;
+                    if (tmp != 4)
                         break;
-                    }
+                    judge[k][i][j] = 1;
                 }
-                //printf("--%d %d %d\n", i, j, big);
-                s[i].insert({ big, j });
+                judge[1][i][j] = 1;
             }
+            for (int k = 1; k <= 250; k++)
+                judge[k][i][j] += judge[k][i - 1][j] + judge[k][i][j - 1] - judge[k][i - 1][j - 1];
+        }
     while (q--) {
         int r1, c1, r2, c2;
         scanf("%d%d%d%d", &r1, &c1, &r2, &c2);
         int ans = 0;
-        for (int i = r1; i <= r2; i++)
-            for (auto j = s[i].rbegin(); j != s[i].rend(); j++)
-                if (ans < j->ff && ans < min(i - r1 + 1, r2 - i)) {
-                    int minn = min(min(i - r1 + 1, r2 - i), min(j->ss - c1 + 1, c2 - j->ss));
-                    minn = min(minn, j->ff);
-                    ans = max(ans, minn);
-                } else
-                    break;
+        int l = 1, r = min(r2 - r1, c2 - c1) + 1;
+        while (l <= r) {
+            int mid = l + r >> 1;
+            if (r1 + mid - 1 > r2 - mid || c1 + mid - 1 > c2 - mid)
+                r = mid - 1;
+            else if (judge[mid][r2 - mid][c2 - mid] - judge[mid][r2 - mid][c1 + mid - 2] - judge[mid][r1 + mid - 2][c2 - mid] + judge[mid][r1 + mid - 2][c1 + mid - 2])
+                l = mid + 1, ans = max(ans, mid);
+            else
+                r = mid - 1;
+        }
         printf("%d\n", 4 * ans * ans);
     }
 }
