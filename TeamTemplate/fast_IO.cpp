@@ -8,7 +8,10 @@ struct FastIO {
 		return (s==t)&&(t=(s=0)+fread(buf,1,LEN,stdin)),s==t?-1:buf[s++];
 	}
 	inline void out(int x){
-		wpos==LEN?fwrite(wbuf,1,LEN,stdout),wpos=0:wbuf[wpos++]=x;
+		if (wpos == LEN) {
+            fwrite(wbuf, 1, LEN, stdout), wpos = 0;
+        }
+        wbuf[wpos++] = x;
 	}
 	// 有符号：
 	inline int rint(){
