@@ -1,32 +1,41 @@
-# 配置自己的WSL
+# 配置自己的WSL(Debian.ver)
 
-## 更换为阿里云源
+## 下载Debian
+
+打开网址 https://aka.ms/wsl-debian-gnulinux
+
+更改后缀名为`*.zip`，解压到想要安装的目录
+
+双击`Debian.exe`安装
+
+## 更换为tuna源
 
 #### 先备份
 
 ```shell
-sudo cp /etc/apt/source.list /etc/apt/source.list.back  
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.back  
 ```
 
 #### 然后
 
 ```shell
-sudo vim /etc/apt/source.list
+sudo apt install apt-transport-https ca-certificates
+
+sudo vi /etc/apt/source.list
 ```
 
 #### 更换文件内容为
 
 ```
-deb http://mirrors.aliyun.com/ubuntu/ focal main restricted
-deb http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted
-deb http://mirrors.aliyun.com/ubuntu/ focal universe
-deb http://mirrors.aliyun.com/ubuntu/ focal-updates universe
-deb http://mirrors.aliyun.com/ubuntu/ focal multiverse
-deb http://mirrors.aliyun.com/ubuntu/ focal-updates multiverse
-deb http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted
-deb http://mirrors.aliyun.com/ubuntu/ focal-security universe
-deb http://mirrors.aliyun.com/ubuntu/ focal-security multiverse
+# 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ stretch main contrib non-free
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ stretch main contrib non-free
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ stretch-updates main contrib non-free
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ stretch-updates main contrib non-free
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ stretch-backports main contrib non-free
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ stretch-backports main contrib non-free
+deb https://mirrors.tuna.tsinghua.edu.cn/debian-security stretch/updates main contrib non-free
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian-security stretch/updates main contrib non-free
 ```
 
 #### 更新一下
@@ -100,9 +109,9 @@ sudo apt-get install autojump
 #### zsh-syntax-highlighting 语法高亮插件
 
 ```shell
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
 
-echo "source ${(q-)PWD}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
+echo "source $ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
 
 source .zshrc
 ```
