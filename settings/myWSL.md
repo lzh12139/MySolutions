@@ -131,3 +131,18 @@ source $ZSH_CUSTOM/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 ```
 
 最后 `source .zshrc`
+
+
+## 图形化界面
+
+前往 https://sourceforge.net/projects/vcxsrv/ 下载VcXsrv
+
+执行以下命令
+
+```shell
+sudo apt-get install xfce4-terminal
+sudo apt-get install xfce4
+
+export DISPLAY=:0.0
+export LIBGL_ALWAYS_INDIRECT=1
+```
