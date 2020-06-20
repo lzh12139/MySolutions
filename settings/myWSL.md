@@ -142,7 +142,11 @@ source $ZSH_CUSTOM/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 ```shell
 sudo apt-get install xfce4-terminal
 sudo apt-get install xfce4
+```
 
+在`.bashrc`最后加入：
+
+```
 export DISPLAY=:0.0
 export LIBGL_ALWAYS_INDIRECT=1
 ```
